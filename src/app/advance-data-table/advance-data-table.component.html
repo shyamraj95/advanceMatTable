@@ -1,0 +1,47 @@
+<div class="search-box">
+    <mat-form-field class="form-field">
+        <mat-icon fontIcon="search" matPrefix></mat-icon>
+        <mat-label>Search</mat-label>
+        <input matInput [(ngModel)]="filterValue" (ngModelChange)="applyFilter($event)">
+        <mat-icon  *ngIf="filterValue" matSuffix (click)="clearFilter();" fontIcon="close"></mat-icon>
+    </mat-form-field>
+</div>
+<table mat-table [dataSource]="dataSource" class="mat-elevation-z8" matSort matSortDirection="desc">
+    <ng-container [matColumnDef]="tableData" *ngFor="let tableData of objectKeys(columnHeader)">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ng-container *ngIf="columnHeader[tableData] !== 'select'; else checkbox">
+                {{columnHeader[tableData]}}
+            </ng-container>
+            <ng-template #checkbox>
+                <mat-checkbox (change)="$event ? toggleAllRows() : null; selectedRowsData()"
+                    [checked]="selection.hasValue() && isAllSelected()"
+                    [indeterminate]="selection.hasValue() && !isAllSelected()">
+                </mat-checkbox>
+            </ng-template>
+        </th>
+        <td mat-cell *matCellDef="let row" [appHighlight]="[filterValue, row[tableData]]">
+            <container-element [ngSwitch]="tableData">
+                <ng-container *ngSwitchCase="'select'">
+                    <mat-checkbox (click)="$event.stopPropagation()"
+                        (change)="$event ? selection.toggle(row) : null; selectedRowsData()"
+                        [checked]="selection.isSelected(row)"
+                        [disabled]="row.disable"> </mat-checkbox>
+                </ng-container>
+                <ng-container *ngSwitchCase="'actions'">
+                    <ng-container *ngTemplateOutlet="actionButtons; context: { $implicit: row }"></ng-container>
+                </ng-container>
+                <ng-container *ngSwitchDefault>
+                    {{row[tableData] }}
+                </ng-container>
+            </container-element>
+        </td>
+    </ng-container>
+    <tr mat-header-row *matHeaderRowDef="objectKeys(columnHeader)"></tr>
+    <tr mat-row *matRowDef="let row; columns: objectKeys(columnHeader);"></tr>
+</table>
+<mat-divider></mat-divider>
+<mat-paginator [length]="100"
+              [pageSize]="10"
+              [pageSizeOptions]="[5, 10, 25, 100]"
+              aria-label="Select page">
+</mat-paginator>
